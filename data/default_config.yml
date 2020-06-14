@@ -2,7 +2,7 @@ humidity_oversample: "OS_2X"
 temperature_oversample: "OS_8X"
 pressure_oversample: "OS_4X"
 filter_size: "FILTER_SIZE_3"
-disable_gas_meas: false
+enable_gas_meas: "yes"
 temp_offset: 0
 gas_heater_temperature: 320
 gas_heater_duration: 150
@@ -14,4 +14,4 @@ humidity_weight: 0.25
 top_gas_reading_file: "/data/top_gas_readings.txt"
 top_gas_reading_size: 50
 log_level: "INFO"
-
+log_telegraf: "yes"
