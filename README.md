@@ -44,7 +44,7 @@ The following argument set the arguments for the [Pimorini BME680 library](https
 - ``burn_in_time``: Seconds of burn-in for calibrating the gas sensor before actual air quality values are computed. Recommended value: ``300``.
 - ``sampling_time``: Seconds between each sensor measurement. Sampling at more than 3 seconds may provide inaccurate gas measurements. Recommended value: ``3``.
 - ``humidity_baseline``: Humidity baseline for air quality formula. Recommended value: ``40.0``
-- ``humidity_weight``: Humidity weight for air quality formula. Recommended value: ``0.25``
+- ``humidity_weight``: Humidity weight for air quality formula, between ``0`` and ``1``. Recommended value: ``0.25``
 - ``top_gas_reading_file``: Output file in the Docker container file system where top gas reading will be stored. Defaults: ``/data/top_gas_readings.txt``.
 - ``top_gas_reading_size``: Length of list of top gas readings. Recommended value: ``50``.
 
@@ -62,13 +62,29 @@ The AIQ is computed using the formula proposed by David Bird at Adafruit, whose 
 
 where: 
 
-- $$gas\_score=(1 - hum\_weight) * \min(1, \frac{gas}{gas\_perfect\_air})$$
-
-- $$hum\_score= \left\{\begin{matrix} hum\_weight * \frac{hum}{hum\_perfect\_air},& \text{if } hum > hum\_perfect\_air
-\\hum\_weight * \frac{100 - hum}{100-hum\_perfect\_air},& \text{otherwise}
-\end{matrix}\right.$$
 
 - ``gas_score = ( 1 - hum_weight ) *  min (1, ( gas / gas_perfect_air ) )``
 
-- ``hum_score = hum_weight * ( hum / hum_perfect_air )``
+- ``hum_score = hum_weight *  hum / hum_perfect_air `` if ``hum > hum_perfect_air
+
+- ``hum_score = hum_weight * ( 100 - hum)  / ( 100 - hum_perfect_air )`` if ``hum <= hum_perfect_air
+
+Parameters in the above formula are set as follows:
+
+- ``hum_weight``: importance of humidity in the formula. When 0.50 gas and humidity has equal importance.
+- ``hum_perfect_air``: value of humidity in perfect environment, typically 40%.
+- ``gas_perfect_air``: value of gas resistance in Ohms in perfect environment condition. Higher value corresponds to better air quality. This value is set automatically in the code by computing the average of the top 50 gas reading since the start of recording.
+
+
+The resulting ``aiq_score`` is classified as follows:
+
+| gas-score | air quality                    |
+|-----------|--------------------------------|
+| 0-50      | Good                           |
+| 51-150    | Moderate                       |
+| 151-175   | Unhealthy for sensitive people |
+| 176-200   | Unhealthy                      |
+| 201-300   | Very unhealthy                 |
+| >300      | Hazardous                      |
+
  
