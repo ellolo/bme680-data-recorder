@@ -37,7 +37,7 @@ This project has been tested only on Raspberry Pi 4B and with the [Pimoroni BME6
 ## Usage
 
 1. Create a configuration file (e.g. ``default_config.yml``) and place it in a directory (e.g. ``/home/pi/dev/sensorics/bme680-data-recorder/mydata``).
-2. Build image: ``docker build  -t bme680 .`` 
+2. Build image: ``docker build  -t bme680 .`` . 
 3. Run the container: `` docker run -ti --name mybme680 --device /dev/i2c-1 -v /home/pi/dev/sensorics/bme680-data-recorder/mydata/:/data:rw --env BME680_CONFIG_FILE=/data/default_config.yml bme680``.
 4. Run ``docker logs mybme680`` to get the logs of the container.
 
@@ -49,7 +49,7 @@ See ``data/default_config.yml`` for example default config.
 
 ### Pimoroni library configuration
 
-The following argument set the arguments for the [Pimorini BME680 library](https://github.com/pimoroni/bme680-python/tree/master/library). Please refer to the library and the [Pimoroni tutorial](https://learn.pimoroni.com/tutorial/sandyj/getting-started-with-bme680-breakout) for more details on these arguments.
+The following sets the arguments for the [Pimorini BME680 library](https://github.com/pimoroni/bme680-python/tree/master/library). Please refer to the library and the [Pimoroni tutorial](https://learn.pimoroni.com/tutorial/sandyj/getting-started-with-bme680-breakout) for more details on these arguments.
 
 - ``humidity_oversample``: Oversampling factor for humidity. The higher the value, the grater the reduction in noise and loss in accuracy. Possible values: ``OS_NONE``, ``OS_1X``, ``OS_2X``, ``OS_4X``, ``OS_8X``, ``OS_16X``. Recommended setting: ``OS_2X``
 - ``temperature_oversample``: Oversampling factor for temperature. The higher the value, the grater the reduction in noise and loss in accuracy. Possible values: ``OS_NONE``, ``OS_1X``, ``OS_2X``, ``OS_4X``, ``OS_8X``, ``OS_16X``. Recommended setting: ``OS_8X``
@@ -80,7 +80,7 @@ The following argument set the arguments for the [Pimorini BME680 library](https
 
 The AIQ is computed using the formula proposed by David Bird at Adafruit, whose idea and concept is Copyright (c) of David Bird 2018:
 
-`` aiq_score = 100 * (gam_score + hum_score )``
+`` aiq_score = 100 * (gas_score + hum_score )``
 
 where: 
 
@@ -93,7 +93,7 @@ where:
 
 Parameters in the above formula are set as follows:
 
-- ``hum_weight``: importance of humidity in the formula. When 0.50 gas and humidity has equal importance.
+- ``hum_weight``: importance of humidity in the formula. When 0.50 gas and humidity have equal importance.
 - ``hum_perfect_air``: value of humidity in perfect environment, typically 40%.
 - ``gas_perfect_air``: value of gas resistance in Ohms in perfect environment condition. Higher value corresponds to better air quality. This value is set automatically in the code by computing the average of the top 50 gas reading since the start of recording.
 
