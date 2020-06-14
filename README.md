@@ -54,4 +54,21 @@ The following argument set the arguments for the [Pimorini BME680 library](https
 - ``log_telegraf``: Enable logging for [Telegraf](https://www.influxdata.com/time-series-platform/telegraf/). Telegraf logs will be in [InfluxDB protocol format](https://docs.influxdata.com/influxdb/v1.8/write_protocols/line_protocol_reference/) as follows: ``weather temperature=<value>,pressure=<value>,humidity=<value>,gas=<value>,air_quality=<value>,aiq=<text value>``. Possible values: ``yes``, ``no``.
 
 
-## Formula for computing air quality
+## Computation of Indoor Air Quality (IAQ)
+
+The AIQ is computed using the formula proposed by David Bird at Adafruit, whose idea and concept is Copyright (c) of David Bird 2018:
+
+`` aiq_score = 100 * (gam_score + hum_score )``
+
+where: 
+
+- $$gas\_score=(1 - hum\_weight) * \min(1, \frac{gas}{gas\_perfect\_air})$$
+
+- $$hum\_score= \left\{\begin{matrix} hum\_weight * \frac{hum}{hum\_perfect\_air},& \text{if } hum > hum\_perfect\_air
+\\hum\_weight * \frac{100 - hum}{100-hum\_perfect\_air},& \text{otherwise}
+\end{matrix}\right.$$
+
+- ``gas_score = ( 1 - hum_weight ) *  min (1, ( gas / gas_perfect_air ) )``
+
+- ``hum_score = hum_weight * ( hum / hum_perfect_air )``
+ 
