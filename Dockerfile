@@ -7,5 +7,5 @@ RUN pip install -r /requirements.txt
 COPY app/ /app
 
 WORKDIR /app
- 
+
 ENTRYPOINT [ "python", "./bme680_data_recorder.py" ]
