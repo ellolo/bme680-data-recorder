@@ -1,3 +1,24 @@
+# BME680 Indoor Air Quality Data Recorder
+A Docker image that reads the BME680 sensor data using the [Pimoroni BME680 library](https://github.com/pimoroni/bme680-python/), and outputs the following weather readings as logs in stderr:
+temperature, pressure, humidity, gas resistance, Indoor Air Quality index. Example of logs from a running container:
+
+```
+20-06-14 09:55:29 - INFO - burn in 1561772.05 (0.11 / 10)
+20-06-14 09:55:30 - INFO - burn in 332806.27 (1.19 / 10)
+20-06-14 09:55:32 - INFO - burn in 375707.31 (2.21 / 10)
+20-06-14 09:55:33 - INFO - burn in 390736.44 (3.21 / 10)
+20-06-14 09:55:34 - INFO - burn in 393492.95 (4.22 / 10)
+20-06-14 09:55:35 - INFO - burn in 420434.33 (5.23 / 10)
+20-06-14 09:55:36 - INFO - burn in 434630.80 (6.24 / 10)
+20-06-14 09:55:37 - INFO - burn in 432384.65 (7.25 / 10)
+20-06-14 09:55:38 - INFO - burn in 451640.63 (8.26 / 10)
+20-06-14 09:55:39 - INFO - burn in 458446.16 (9.26 / 10)
+20-06-14 09:55:40 - INFO - Top gas reading file does not exist. Initializing it.
+20-06-14 09:55:40 - INFO - 21.15 C, 954.96 %RH , 55.63 hPa, 458132.37 Ohms, air quality: 32.56(Good)
+20-06-14 09:55:43 - INFO - 21.18 C, 954.96 %RH , 55.56 hPa, 476731.74 Ohms, air quality: 32.42(Good)
+20-06-14 09:55:46 - INFO - 21.14 C, 954.97 %RH , 55.51 hPa, 465136.47 Ohms, air quality: 33.54(Good)
+```
+Optionally, the container can output logs in stdout in InfluxDB protocol (see section "Configuration"). These logs can be ingested by [Telegraf](https://www.influxdata.com/time-series-platform/telegraf/) and further stored in InfluxDB.
 
 ## Hardware requirements
 
@@ -13,11 +34,12 @@ This project has been tested only on Raspberry Pi 4B and with the [Pimoroni BME6
 - Enable i2c via Raspberry Pi configuration, typing ``sudo raspi-config``.
  
 
-## Build and run the image
+## Usage
 
 1. Create a configuration file (e.g. ``default_config.yml``) and place it in a directory (e.g. ``/home/pi/dev/sensorics/bme680-data-recorder/mydata``).
 2. Build image: ``docker build  -t bme680 .`` 
 3. Run the container: `` docker run -ti --name mybme680 --device /dev/i2c-1 -v /home/pi/dev/sensorics/bme680-data-recorder/mydata/:/data:rw --env BME680_CONFIG_FILE=/data/default_config.yml bme680``.
+4. Run ``docker logs mybme680`` to get the logs of the container.
 
 ## Configuration
 
@@ -65,9 +87,9 @@ where:
 
 - ``gas_score = ( 1 - hum_weight ) *  min (1, ( gas / gas_perfect_air ) )``
 
-- ``hum_score = hum_weight *  hum / hum_perfect_air `` if ``hum > hum_perfect_air
+- ``hum_score = hum_weight *  hum / hum_perfect_air `` if ``hum > hum_perfect_air``
 
-- ``hum_score = hum_weight * ( 100 - hum)  / ( 100 - hum_perfect_air )`` if ``hum <= hum_perfect_air
+- ``hum_score = hum_weight * ( 100 - hum)  / ( 100 - hum_perfect_air )`` if ``hum <= hum_perfect_air``
 
 Parameters in the above formula are set as follows:
 
