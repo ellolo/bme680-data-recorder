@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 import logging
@@ -22,6 +23,7 @@ def get_constant(param_name, typ):
 
 
 def write_top_gas(top_readings, file_path):
+    logger.info("Writing top gas reading file.")
     with open(file_path, "w") as of:
         for reading in top_readings:
             of.write(f"{reading}\n")
@@ -95,7 +97,7 @@ def record_data(sensor):
     humidity_weight = config['humidity_weight'].get(float)
     top_gas_path = config["top_gas_reading_file"].as_filename()
     top_gas_reading_size = config["top_gas_reading_size"].get(int)
-    log_telegraf = config["log_telegraf"].get(bool)
+    log_telegraf = config["log_telegraf"].get() == "yes"
 
     top_gas_readings = read_top_gas(top_gas_path)
     heapq.heapify(top_gas_readings)
@@ -135,12 +137,12 @@ def record_data(sensor):
 def parse_arguments():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('config_file', help='path to yaml configuration file')
+    parser.add_argument('--config_file', help='path to yaml configuration file', default=os.environ.get("BME680_CONFIG_FILE"))
     parser.add_argument('--humidity_oversample')
     parser.add_argument('--temperature_oversample')
     parser.add_argument('--pressure_oversample')
     parser.add_argument('--filter_oversample')
-    parser.add_argument('--disable_gas_meas', action='store_true')
+    parser.add_argument('--enable_gas_meas', type=str)
     parser.add_argument('--temp_offset', type=int)
     parser.add_argument('--gas_heater_temperature', type=int)
     parser.add_argument('--gas_heater_duration', type=int)
@@ -152,8 +154,23 @@ def parse_arguments():
     parser.add_argument('--top_gas_reading_file')
     parser.add_argument('--top_gas_reading_size', type=int)
     parser.add_argument('--log_level')
-    parser.add_argument('--log_telegraf', action='store_true', help='creates telegraf logs in stdout')
-    return parser.parse_args()
+    parser.add_argument('--log_telegraf', type=str, help='creates telegraf logs in stdout')
+    args = parser.parse_args()
+    if not args.config_file: 
+      print("config_file not specified.")
+      exit(parser.print_usage())
+    return args
+   
+
+def check_args():
+    config['sampling_time'].get(int)
+    config['humidity_baseline'].get(float)
+    config['humidity_weight'].get(float)
+    config["top_gas_reading_file"].as_filename()
+    config["top_gas_reading_size"].get(int)
+    config["log_telegraf"].as_choice(["yes", "no"])
+    config['enable_gas_meas'].as_choice(["yes", "no"]) 
+
 
 
 def initialize_bme680():
@@ -162,7 +179,7 @@ def initialize_bme680():
     temperature_os = get_constant('temperature_oversample', str)
     pressure_os = get_constant('pressure_oversample', str)
     filter_size = get_constant('filter_size', str)
-    enable_gas_meas = bme680.constants.ENABLE_GAS_MEAS if not config['disable_gas_meas'].get(bool)\
+    enable_gas_meas = bme680.constants.ENABLE_GAS_MEAS if config['enable_gas_meas'].get() == "yes"\
         else bme680.constants.DISABLE_GAS_MEAS
     temp_offset = config['temp_offset'].get(int)
     gas_heater_temperature = config['gas_heater_temperature'].get(int)
@@ -198,13 +215,13 @@ def setup_loggers():
 
 
 def main():
-
     args = parse_arguments()
     config.set_file(args.config_file)
     config.set_args(args)
+    check_args()
+    setup_loggers()
 
     sensor = initialize_bme680()
-    setup_loggers()
     burn_in(sensor)
     record_data(sensor)
 
